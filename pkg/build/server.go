@@ -7,9 +7,11 @@ package build
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"k8s.io/klog"
 
 	pb "github.com/tsuru/deploy-agent/pkg/build/grpc_build_v1"
 )
@@ -40,6 +42,11 @@ func (s *Server) Build(req *pb.BuildRequest, stream pb.Build_BuildServer) error 
 
 	w := &BuildResponseOutputWriter{stream: stream}
 	fmt.Fprintln(w, " ---> Starting container image build")
+
+	go func() {
+		<-ctx.Done()
+		klog.V(4).Infof("Build RPC context done: %v at %s", ctx.Err(), time.Now().String())
+	}()
 
 	appFiles, err := s.b.Build(ctx, req, w)
 	if err != nil {

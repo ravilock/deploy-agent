@@ -12,6 +12,7 @@ import (
 
 	"github.com/tsuru/deploy-agent/pkg/build/metadata"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -21,10 +22,12 @@ func MayUpscale(ctx context.Context, cs kubernetes.Interface, ns, statefulset st
 	if err != nil {
 		return err
 	}
+	klog.V(4).Infof("Found statefulset %s/%s", stfullset.Namespace, stfullset.Name)
 
 	if stfullset.Spec.Replicas != nil && *stfullset.Spec.Replicas > 0 {
 		return nil
 	}
+	klog.V(4).Infof("Current statefulset replicas: %d", *stfullset.Spec.Replicas)
 
 	wantedReplicas := int32(1)
 
@@ -44,6 +47,7 @@ func MayUpscale(ctx context.Context, cs kubernetes.Interface, ns, statefulset st
 	if err != nil {
 		return err
 	}
+	klog.V(4).Infof("Statefulset %s/%s scaled to %d replicas", stfullset.Namespace, stfullset.Name, wantedReplicas)
 
 	return nil
 }

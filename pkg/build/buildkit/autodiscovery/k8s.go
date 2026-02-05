@@ -164,7 +164,7 @@ func (d *K8sDiscoverer) discoverBuildKitPod(ctx context.Context, opts Kubernerte
 				go leaser.releaseAll()
 				return nil, fmt.Errorf("leased pods channel was closed before acquiring any lease")
 			}
-			go leaser.releaseAll(releaseOptions{except: leasedPod.Name})
+			go leaser.releaseAll(releaseOptions{except: fmt.Sprintf("%s/%s", leasedPod.Namespace, leasedPod.Name)})
 			return leasedPod, nil
 		}
 	}

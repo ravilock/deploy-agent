@@ -6,6 +6,7 @@ package autodiscovery
 
 import (
 	"context"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/watch"
@@ -42,10 +43,12 @@ func (n *podNotifier) notify(ctx context.Context, conditions ...filterCondition)
 			pod := e.Object.(*corev1.Pod)
 			if applyConditions(pod, conditions...) {
 				n.pods <- pod
+				klog.V(4).Infof("Pod %s/%s is ready", pod.Namespace, pod.Name)
 			} else {
 				klog.V(4).Infof("Pod %s/%s is not ready yet", pod.Namespace, pod.Name)
 			}
 		case <-ctx.Done():
+			klog.V(4).Infof("Pod notifier context (%p) done at %s, stopping notifier", ctx, time.Now().String())
 			return
 		}
 	}
